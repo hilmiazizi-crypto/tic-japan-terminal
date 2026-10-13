@@ -9,7 +9,7 @@ header{display:flex;align-items:center;gap:16px;padding:8px 14px;border-bottom:2
 .logo b{color:var(--amber);font-size:18px;letter-spacing:2px}.logo small{color:var(--red);font-size:11px;letter-spacing:3px}
 .jp{color:var(--mut);font-size:12px}.clocks{margin-left:auto;display:flex;gap:16px;color:var(--mut)}.clocks span b{color:var(--amber)}
 #ticker{white-space:nowrap;overflow:hidden;border-bottom:1px solid var(--line);padding:4px 0;color:var(--mut)}#ticker #tk{display:inline-block;animation:sc 90s linear infinite}#ticker:hover #tk{animation-play-state:paused}.ti{cursor:pointer;padding:0 4px}.ti:hover{background:#181b21}.ti b{color:var(--amber)}.ti .tn{color:var(--mut)}#chart>div{height:100%}@keyframes sc{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-main{display:grid;grid-template-columns:300px 1fr 330px;gap:8px;padding:8px;height:calc(100vh - 82px)}
+main{display:grid;grid-template-columns:300px 1fr 330px;gap:8px;padding:8px;height:clamp(640px,calc(100vh - 90px),880px)}
 .p{background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column;min-height:0}.p h3{margin:0;padding:6px 10px;font-size:12px;color:#000;background:var(--amber);letter-spacing:1px;display:flex;justify-content:space-between}
 .row{display:flex;justify-content:space-between;padding:6px 10px;border-bottom:1px solid var(--line);cursor:pointer}.row:hover{background:#181b21}.row .s{color:var(--amber)}.row .n{color:var(--mut);font-size:11px}
 .up{color:var(--up)}.dn{color:var(--dn)}.scroll{overflow:auto;flex:1}
@@ -20,6 +20,16 @@ main{display:grid;grid-template-columns:300px 1fr 330px;gap:8px;padding:8px;heig
 .news{padding:7px 10px;border-bottom:1px solid var(--line)}.news a{color:var(--txt);text-decoration:none}.news a:hover{color:var(--amber)}.news .m{font-size:10px;color:var(--mut)}.news .c{color:var(--red)}
 #hdr{padding:6px 10px;display:flex;gap:16px;align-items:baseline}#hdr .big{font-size:24px;color:var(--amber)}
 @media(max-width:1000px){main{grid-template-columns:1fr;height:auto}.center{grid-template-rows:420px auto}.minis{grid-template-columns:repeat(2,1fr)}.p{max-height:500px}}
+
+#ta{margin:0 8px 8px;background:var(--panel);border:1px solid var(--line)}#ta h3{margin:0;padding:6px 10px;font-size:12px;color:#000;background:var(--amber);letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+#ta h3 button,.tog button{background:none;border:1px solid #000;color:#000;font:inherit;font-size:11px;cursor:pointer;padding:0 6px}#ta h3 button.on{background:#000;color:var(--amber)}
+.tagrid{display:grid;grid-template-columns:260px 1fr 1fr 1fr;gap:8px;padding:8px}.card{border:1px solid var(--line);background:#0a0b0e;padding:8px;min-width:0}.card h4{margin:0 0 6px;color:var(--amber);font-size:11px;letter-spacing:1px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.gauge{text-align:center}.gauge .lbl{font-size:20px;font-weight:bold;letter-spacing:1px}.gauge .cnt{display:flex;justify-content:space-around;margin-top:4px;font-size:11px}
+table.t{width:100%;border-collapse:collapse;font-size:12px}table.t td{padding:3px 4px;border-bottom:1px solid #16181d}table.t td:nth-child(2){text-align:right}table.t td:last-child{text-align:right}
+.sig{font-size:10px;padding:1px 5px;border-radius:2px;font-weight:bold}.sig.BUY,.sig.bullish{background:#14361f;color:#22c55e}.sig.SELL,.sig.bearish{background:#3a1218;color:#ef4444}.sig.NEUTRAL,.sig.neutral{background:#2a2410;color:#ffb000}
+.mtf{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:0 8px 8px}.mtf div{border:1px solid var(--line);padding:6px;text-align:center;cursor:pointer;background:#0a0b0e}.mtf div.on{border-color:var(--amber)}.mtf b{display:block;color:var(--amber)}
+.disc{padding:6px 10px;color:var(--mut);font-size:11px;border-top:1px solid var(--line)}.tog{display:flex;gap:4px;align-items:center}.tog button.on{background:#000;color:var(--amber)}
+@media(max-width:1000px){.tagrid{grid-template-columns:1fr}.mtf{grid-template-columns:repeat(3,1fr)}}
 </style></head><body>
 <header><div class="logo"><div class="sun"></div><div><b>TIC JAPAN TERMINAL</b><br><small>ティック・ジャパン ・ MARKETS</small></div></div><span class="jp" id="status">● LIVE</span>
 <div class="clocks"><span>TOKYO <b id="jst"></b></span><span>JAKARTA <b id="wib"></b></span><span>NEW YORK <b id="ny"></b></span></div></header>
@@ -30,6 +40,13 @@ main{display:grid;grid-template-columns:300px 1fr 330px;gap:8px;padding:8px;heig
 <div class="minis" id="minis"></div></section>
 <section class="p"><h3>NEWS / ニュース <span id="nupd"></span></h3><div class="tabs" id="tabs"></div><div class="scroll" id="news"></div></section>
 </main>
+<section id="ta"><h3><span>TECHNICAL ANALYSIS / テクニカル分析 · <span id="tasym"></span></span><span class="tog" id="tatf"></span><span class="tog" id="ovl" title="Overlay on Yahoo chart">OVERLAY: <button data-o="ema">EMA</button><button data-o="bb">BB</button><button data-o="sr">S/R</button><button data-o="pat">PATTERN</button></span></h3>
+<div class="mtf" id="mtf"></div>
+<div class="tagrid"><div class="card gauge"><h4>SUMMARY</h4><svg id="gsvg" viewBox="0 0 200 115" width="100%"></svg><div class="lbl" id="glbl">—</div><div id="gtrend" class="jp"></div><div class="cnt" id="gcnt"></div><div class="jp" id="gproxy" style="margin-top:6px;font-size:10px"></div></div>
+<div class="card"><h4>INDICATORS</h4><table class="t" id="tind"></table></div>
+<div class="card"><h4>PATTERNS / パターン</h4><table class="t" id="tpat"></table></div>
+<div class="card"><h4>SUPPORT / RESISTANCE & PIVOTS (CLASSIC)</h4><table class="t" id="tsr"></table></div></div>
+<div class="disc">⚠ Analisa teknikal otomatis (heuristik) — <b style="color:#ffb000">bukan rekomendasi investasi</b>. Data Yahoo Finance, bisa delay. Gunakan dengan manajemen risiko sendiri. / 投資助言ではありません。</div></section>
 <script>
 const WATCH=[['NVDA','NVIDIA'],['TSLA','Tesla'],['9984.T','SoftBank Group'],['BBRI.JK','Bank Rakyat Indonesia'],['AAPL','Apple'],['META','Meta'],['^N225','Nikkei 225'],['^JKSE','IHSG / JCI'],['7203.T','Toyota'],['BTC-USD','Bitcoin']];
 const MINI=[['SI=F','XAGUSD · Silver'],['RATIO','XAU/XAG Ratio'],['JPY=X','USDJPY'],['^TNX','US10Y Yield']];
@@ -42,7 +59,35 @@ function clocks(){const f=tz=>new Date().toLocaleTimeString('en-GB',{timeZone:tz
 const TV={'GC=F':'OANDA:XAUUSD','SI=F':'OANDA:XAGUSD','JPY=X':'OANDA:USDJPY','IDR=X':'OANDA:USDIDR','^N225':'OANDA:JP225USD','NVDA':'NASDAQ:NVDA','TSLA':'NASDAQ:TSLA','AAPL':'NASDAQ:AAPL','META':'NASDAQ:META','BTC-USD':'BITSTAMP:BTCUSD'};
 const YRANGE={'1D':['1d','5m'],'5D':['5d','30m'],'1M':['1mo','1h'],'6M':['6mo','1d'],'1Y':['1y','1d'],'5Y':['5y','1wk']};
 let lwc=null;
-async function yahooChart(el){el.innerHTML='';const c=LightweightCharts.createChart(el,{autoSize:true,layout:{background:{color:'#0e1014'},textColor:'#9aa'},grid:{vertLines:{color:'#1a1d23'},horzLines:{color:'#1a1d23'}},timeScale:{timeVisible:true,borderColor:'#333'},rightPriceScale:{borderColor:'#333'},localization:{timeFormatter:t=>new Date(t*1000).toLocaleString('en-GB',{timeZone:'Asia/Tokyo',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'})}});lwc=c;const cs=c.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderVisible:false,wickUpColor:'#22c55e',wickDownColor:'#ef4444'});const [r,i]=YRANGE[rng];try{const d=await (await fetch(`/api/chart?s=${encodeURIComponent(cur)}&range=${r}&interval=${i}`)).json();cs.setData(d.candles);c.timeScale().fitContent();const m=d.meta,prev=rng==='1D'?m.prev:d.candles[0].open;hdr.innerHTML=`<span class="big">${fmt(m.price)}</span>${chg(m.price,prev)}<span class="jp">${m.currency||''} · Source: Yahoo Finance (${cur}) · upd ${new Date(m.time*1000).toLocaleTimeString('en-GB',{timeZone:'Asia/Tokyo'})} JST</span>`}catch(e){hdr.textContent='Data error'}}
+
+let taTf='1D',taData=null,OV={ema:false,bb:false,sr:false,pat:false},ovSeries=[];
+const TFS=['15m','1H','4H','1D','1W'];tatf.innerHTML='TF: '+TFS.map(t=>`<button data-t="${t}">${t}</button>`).join('');
+tatf.onclick=e=>{if(e.target.dataset.t){taTf=e.target.dataset.t;loadTA()}};
+ovl.onclick=e=>{const o=e.target.dataset.o;if(!o)return;OV[o]=!OV[o];e.target.classList.toggle('on',OV[o]);if(!TV[cur])loadChart()};
+mtf.onclick=e=>{const d=e.target.closest('[data-t]');if(d){taTf=d.dataset.t;loadTA()}};
+const sigTxt=s=>`<span class="sig ${/BUY|bullish/.test(s)?'BUY':/SELL|bearish/.test(s)?'SELL':'NEUTRAL'}">${s}</span>`,dp=v=>Math.abs(v)<10?4:2;
+function gauge(score,label){const a=Math.PI*(1-(score+1)/2),x=100+80*Math.cos(a),y=100-80*Math.sin(a);const seg=(f,t,c)=>{const a1=Math.PI*(1-f),a2=Math.PI*(1-t);return `<path d="M${100+80*Math.cos(a1)} ${100-80*Math.sin(a1)} A80 80 0 0 1 ${100+80*Math.cos(a2)} ${100-80*Math.sin(a2)}" stroke="${c}" stroke-width="14" fill="none"/>`};
+ gsvg.innerHTML=seg(0,.25,'#b91c1c')+seg(.25,.45,'#ef4444')+seg(.45,.55,'#ffb000')+seg(.55,.75,'#22c55e')+seg(.75,1,'#15803d')+`<line x1="100" y1="100" x2="${x}" y2="${y}" stroke="#fff" stroke-width="3"/><circle cx="100" cy="100" r="5" fill="#fff"/><text x="8" y="114" fill="#7b808a" font-size="9">STRONG SELL</text><text x="140" y="114" fill="#7b808a" font-size="9">STRONG BUY</text>`;
+ glbl.textContent=label;glbl.style.color=label.includes('BUY')?'#22c55e':label.includes('SELL')?'#ef4444':'#ffb000'}
+async function loadTA(){const sym=cur;[...tatf.querySelectorAll('button')].forEach(b=>b.classList.toggle('on',b.dataset.t===taTf));tasym.textContent=(NAMES[sym]||sym)+' · '+taTf;
+ fetch(`/api/ta?symbol=${encodeURIComponent(sym)}&tf=all`).then(r=>r.json()).then(a=>{if(sym!==cur)return;mtf.innerHTML=a.map(x=>`<div data-t="${x.tf}" class="${x.tf===taTf?'on':''}"><b>${x.tf}</b>${x.error?'n/a':sigTxt(x.summary)}<div class="jp" style="font-size:10px">${x.error?'':`B${x.counts.BUY} · N${x.counts.NEUTRAL} · S${x.counts.SELL}`}</div></div>`).join('')}).catch(()=>{});
+ try{const r=await fetch(`/api/ta?symbol=${encodeURIComponent(sym)}&tf=${taTf}`);const d=await r.json();if(sym!==cur)return;if(d.error)throw d.error;taData=d;
+  gauge(d.score,d.summary);gtrend.innerHTML=`Trend: <b style="color:${d.trend==='UPTREND'?'#22c55e':d.trend==='DOWNTREND'?'#ef4444':'#ffb000'}">${d.trend}</b> · Price ${fmt(d.price,dp(d.price))}`;
+  gcnt.innerHTML=`<span class="up">BUY ${d.counts.BUY}</span><span style="color:#ffb000">NEUTRAL ${d.counts.NEUTRAL}</span><span class="dn">SELL ${d.counts.SELL}</span>`;gproxy.textContent=d.proxy||('Source: Yahoo '+sym)+' · '+d.bars+' bars';
+  tind.innerHTML=d.indicators.map(i=>`<tr><td>${i.name}<div class="jp" style="font-size:10px">${i.note||''}</div></td><td>${i.value==null?'—':i.name.startsWith('Patterns')?i.value:fmt(i.value,dp(i.value))}</td><td>${sigTxt(i.signal)}</td></tr>`).join('');
+  const ago=t=>new Date(t*1000).toLocaleString('en-GB',{timeZone:'Asia/Tokyo',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'})+' JST';
+  tpat.innerHTML=d.patterns.length?d.patterns.map(p=>`<tr><td>${p.name}<div class="jp" style="font-size:10px">${p.type} · ${p.barsAgo?p.barsAgo+' bar lalu':'bar terakhir'} · ${ago(p.time)}${p.note?' · '+p.note:''}</div></td><td>${p.confidence}%</td><td>${sigTxt(p.bias)}</td></tr>`).join(''):'<tr><td class="jp">Tidak ada pola terdeteksi</td></tr>';
+  const pv=d.pivots,lvl=(n,v,c)=>`<tr><td style="color:${c}">${n}</td><td>${fmt(v,dp(v))}</td><td class="jp">${v>d.price?'+':''}${fmt((v-d.price)/d.price*100)}%</td></tr>`;
+  tsr.innerHTML=d.sr.resistance.slice().reverse().map((x,k,a)=>lvl(`Resistance ${a.length-k} <small class="jp">(${x.touches}x)</small>`,x.price,'#ef4444')).join('')+`<tr><td style="color:#ffb000"><b>PRICE</b></td><td><b>${fmt(d.price,dp(d.price))}</b></td><td></td></tr>`+d.sr.support.map((x,k)=>lvl(`Support ${k+1} <small class="jp">(${x.touches}x)</small>`,x.price,'#22c55e')).join('')+
+   `<tr><td colspan="3" style="color:#ffb000;padding-top:8px">PIVOT POINTS (prev bar)</td></tr>`+['R3','R2','R1','P','S1','S2','S3'].map(k=>lvl(k,pv[k],k[0]==='R'?'#ef4444':k[0]==='S'?'#22c55e':'#ffb000')).join('');
+  if(!TV[cur]&&Object.values(OV).some(Boolean))loadChart()}catch(e){tind.innerHTML=`<tr><td class="dn">TA error: ${e}</td></tr>`}}
+function applyOverlay(c,cs){if(!taData||taData.symbol!==cur||taData.tf!==taTf)return false;cs.setData(taData.candles);const L=(data,color,w=1,style=0)=>{const s=c.addLineSeries({color,lineWidth:w,lineStyle:style,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});s.setData(data);return s};
+ if(OV.ema){L(taData.overlay.ema20,'#38bdf8');L(taData.overlay.ema50,'#ffb000');L(taData.overlay.ema200,'#e879f9',2)}
+ if(OV.bb){L(taData.overlay.bbU,'#64748b',1,2);L(taData.overlay.bbL,'#64748b',1,2)}
+ if(OV.sr){taData.sr.resistance.forEach(x=>cs.createPriceLine({price:x.price,color:'#ef4444',lineWidth:1,lineStyle:2,title:'R'}));taData.sr.support.forEach(x=>cs.createPriceLine({price:x.price,color:'#22c55e',lineWidth:1,lineStyle:2,title:'S'}));cs.createPriceLine({price:taData.pivots.P,color:'#ffb000',lineWidth:1,lineStyle:1,title:'P'})}
+ if(OV.pat){taData.patternLines.forEach(l=>{if(l.from.time<l.to.time)L([l.from,l.to],l.color,2)});cs.setMarkers(taData.patternMarkers.slice().sort((a,b)=>a.time-b.time))}
+ c.timeScale().fitContent();hdr.innerHTML+=`<span class="jp"> · overlay TF ${taTf}</span>`;return true}
+async function yahooChart(el){el.innerHTML='';const c=LightweightCharts.createChart(el,{autoSize:true,layout:{background:{color:'#0e1014'},textColor:'#9aa'},grid:{vertLines:{color:'#1a1d23'},horzLines:{color:'#1a1d23'}},timeScale:{timeVisible:true,borderColor:'#333'},rightPriceScale:{borderColor:'#333'},localization:{timeFormatter:t=>new Date(t*1000).toLocaleString('en-GB',{timeZone:'Asia/Tokyo',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'})}});lwc=c;const cs=c.addCandlestickSeries({upColor:'#22c55e',downColor:'#ef4444',borderVisible:false,wickUpColor:'#22c55e',wickDownColor:'#ef4444'});const [r,i]=YRANGE[rng];try{const d=await (await fetch(`/api/chart?s=${encodeURIComponent(cur)}&range=${r}&interval=${i}`)).json();cs.setData(d.candles);c.timeScale().fitContent();const m=d.meta,prev=rng==='1D'?m.prev:d.candles[0].open;hdr.innerHTML=`<span class="big">${fmt(m.price)}</span>${chg(m.price,prev)}<span class="jp">${m.currency||''} · Source: Yahoo Finance (${cur}) · upd ${new Date(m.time*1000).toLocaleTimeString('en-GB',{timeZone:'Asia/Tokyo'})} JST</span>`;if(Object.values(OV).some(Boolean))applyOverlay(c,cs)}catch(e){hdr.textContent='Data error'}}
 NAMES['GC=F']='XAUUSD · GOLD (OANDA)';
 const TVR={'1D':['1D','5'],'5D':['5D','30'],'1M':['1M','60'],'6M':['6M','D'],'1Y':['12M','D'],'5Y':['60M','W']};
 function tvEmbed(el,kind,cfg){el.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div></div>';const sc=document.createElement('script');sc.src='https://s3.tradingview.com/external-embedding/embed-widget-'+kind+'.js';sc.async=true;sc.innerHTML=JSON.stringify(cfg);el.firstChild.appendChild(sc)}
@@ -51,7 +96,7 @@ ranges.onclick=e=>{if(e.target.dataset.r){rng=e.target.dataset.r;loadChart()}};
 function loadChart(){[...ranges.children].forEach(b=>b.classList.toggle('on',b.dataset.r===rng));ctitle.textContent=NAMES[cur]||cur;if(lwc){lwc.remove();lwc=null}if(!TV[cur])return yahooChart(document.getElementById('chart'));const sym=TV[cur],[r,i]=TVR[rng];
  hdr.innerHTML=`<span class="jp">Source: <b style="color:#ffb000">${sym}</b> via TradingView · waktu JST</span>`;
  tvEmbed(document.getElementById('chart'),'advanced-chart',{autosize:true,symbol:sym,interval:i,range:r,timezone:'Asia/Tokyo',theme:'dark',style:'1',locale:'en',backgroundColor:'#0e1014',gridColor:'rgba(40,44,52,0.6)',hide_side_toolbar:false,allow_symbol_change:false,withdateranges:true,details:false,calendar:false,support_host:'https://www.tradingview.com'})}
-function select(s){cur=s;loadChart()}
+function select(s){cur=s;taData=null;loadChart();loadTA()}
 const TAPE=[['GC=F','GOLD'],['SI=F','SILVER'],['JPY=X','USDJPY'],['IDR=X','USDIDR'],['^TNX','US10Y'],['^N225','NIKKEI'],['^JKSE','IHSG'],['NVDA','NVDA'],['TSLA','TSLA'],['9984.T','SOFTBANK'],['7203.T','TOYOTA'],['BBRI.JK','BBRI'],['AAPL','AAPL'],['META','META'],['BTC-USD','BTC']];NAMES['IDR=X']='USDIDR';NAMES['^N225']='^N225 · Nikkei 225';
 function spark(cv,arr,up){const c=cv.getContext('2d'),w=cv.width=cv.clientWidth*2,h=cv.height=120;c.clearRect(0,0,w,h);if(!arr||arr.length<2)return;const mn=Math.min(...arr),mx=Math.max(...arr);c.strokeStyle=up?'#22c55e':'#ef4444';c.lineWidth=3;c.beginPath();arr.forEach((v,i)=>{const x=i/(arr.length-1)*w,y=h-(v-mn)/(mx-mn||1)*(h-10)-5;i?c.lineTo(x,y):c.moveTo(x,y)});c.stroke()}
 async function loadQuotes(){const syms=[...new Set(['GC=F','SI=F','JPY=X','^TNX',...TAPE.map(t=>t[0]),...WATCH.map(w=>w[0])])];try{const d=await (await fetch('/api/quotes?s='+syms.map(encodeURIComponent).join(','))).json();d.forEach(x=>q[x.symbol]=x);status.innerHTML='<span class="up">● LIVE</span>';}catch(e){status.innerHTML='<span class="dn">● OFFLINE</span>';return}
@@ -64,5 +109,6 @@ tabs.innerHTML=CATS.map(c=>`<button data-c="${c}">${c}</button>`).join('');tabs.
 function renderNews(){[...tabs.children].forEach(b=>b.classList.toggle('on',b.dataset.c===cat));const esc=s=>s.replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
  document.getElementById('news').innerHTML=news.filter(n=>cat==='All'||n.cat===cat).slice(0,60).map(n=>`<div class="news"><a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.title)}</a><div class="m"><span class="c">${n.cat}</span> · ${n.date?new Date(n.date).toLocaleString('en-GB',{timeZone:'Asia/Tokyo',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'})+' JST':''}</div></div>`).join('')||'<div class="news">Tidak ada berita</div>'}
 async function loadNews(){try{news=await (await fetch('/api/news')).json();nupd.textContent=new Date().toLocaleTimeString('en-GB',{timeZone:'Asia/Tokyo'})+' JST';renderNews()}catch(e){}}
-loadChart();loadQuotes();loadNews();setInterval(loadQuotes,30000);setInterval(loadNews,180000);
+{const P=new URLSearchParams(location.search);if(P.get('s'))cur=P.get('s');if(P.get('tf'))taTf=P.get('tf');(P.get('ov')||'').split(',').forEach(o=>{if(o in OV){OV[o]=true;ovl.querySelector(`[data-o=${o}]`).classList.add('on')}})}
+loadChart();loadTA();loadQuotes();loadNews();setInterval(loadTA,60000);setInterval(loadQuotes,30000);setInterval(loadNews,180000);
 </script></body></html>
