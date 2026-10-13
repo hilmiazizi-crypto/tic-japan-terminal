@@ -1,6 +1,8 @@
 const http=require('http'),fs=require('fs'),path=require('path');
 const PORT=process.env.PORT||8080, UA={'User-Agent':'Mozilla/5.0'};
-const cache=new Map();
+const cache=new Map();const {analyze,to4h}=require('./ta');
+const TF={'15m':['1mo','15m'],'1H':['3mo','60m'],'4H':['1y','60m'],'1D':['2y','1d'],'1W':['10y','1wk']};
+async function ta(sym,tf){const [r,i]=TF[tf];let d=await chart(sym,r,i);let cd=d.candles.filter(c=>c.high!=null&&c.low!=null);if(tf==='4H')cd=to4h(cd);if(cd.length<30)throw new Error('not enough data');return{symbol:sym,tf,proxy:sym==='GC=F'?'Gold computed from COMEX futures GC=F (Yahoo) as proxy for XAUUSD':sym==='SI=F'?'Silver computed from COMEX futures SI=F (Yahoo)':null,...analyze(cd)}}
 async function cached(key,ttl,fn){const c=cache.get(key);if(c&&Date.now()-c.t<ttl)return c.v;const v=await fn();cache.set(key,{t:Date.now(),v});return v;}
 const FEEDS={Macro:'https://www.investing.com/rss/news_14.rss',Gold:'https://www.investing.com/rss/news_11.rss',Equity:'https://www.investing.com/rss/news_25.rss',FX:'https://www.investing.com/rss/news_1.rss',Asia:'https://news.google.com/rss/search?q=Nikkei+OR+IDX+OR+BOJ+market&hl=en-US&gl=US&ceid=US:en'};
 function parseRss(xml,cat){const out=[];for(const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)){const g=t=>{const r=m[1].match(new RegExp('<'+t+'[^>]*>([\\s\\S]*?)</'+t+'>'));return r?r[1].replace(/<!\[CDATA\[|\]\]>/g,'').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"').trim():''};out.push({title:g('title'),link:g('link'),date:new Date(g('pubDate')).getTime()||0,cat});if(out.length>=15)break;}return out;}
@@ -9,6 +11,9 @@ const send=(res,code,obj,type='application/json')=>{res.writeHead(code,{'Content
 http.createServer(async(req,res)=>{const u=new URL(req.url,'http://x');try{
  if(u.pathname==='/api/chart'){const ok=/^[\w.=^-]{1,20}$/.test(u.searchParams.get('s')||'');if(!ok)return send(res,400,{error:'bad symbol'});return send(res,200,await chart(u.searchParams.get('s'),u.searchParams.get('range')||'1d',u.searchParams.get('interval')||'5m'));}
  if(u.pathname==='/api/quotes'){const syms=(u.searchParams.get('s')||'').split(',').filter(s=>/^[\w.=^-]{1,20}$/.test(s)).slice(0,30);const r=await Promise.allSettled(syms.map(s=>chart(s,'1d','5m')));return send(res,200,r.map((x,i)=>x.status==='fulfilled'?{symbol:syms[i],...x.value.meta,spark:x.value.candles.map(c=>c.close)}:{symbol:syms[i],error:true}));}
+ if(u.pathname==='/api/ta'){const sym=u.searchParams.get('symbol')||'';if(!/^[\w.=^-]{1,20}$/.test(sym))return send(res,400,{error:'bad symbol'});const tf=u.searchParams.get('tf');
+  if(tf==='all'){const r=await Promise.allSettled(Object.keys(TF).map(t=>ta(sym,t)));return send(res,200,r.map((x,k)=>x.status==='fulfilled'?{tf:x.value.tf,summary:x.value.summary,score:x.value.score,counts:x.value.counts,trend:x.value.trend}:{tf:Object.keys(TF)[k],error:true}))}
+  if(!TF[tf])return send(res,400,{error:'tf must be 15m,1H,4H,1D,1W,all'});return send(res,200,await cached('ta'+sym+tf,30000,()=>ta(sym,tf)))}
  if(u.pathname==='/api/news'){const items=await cached('news',180000,async()=>{const r=await Promise.allSettled(Object.entries(FEEDS).map(async([c,url])=>parseRss(await (await fetch(url,{headers:UA})).text(),c)));return r.flatMap(x=>x.status==='fulfilled'?x.value:[]).sort((a,b)=>b.date-a.date);});return send(res,200,items);}
  const f=path.join(__dirname,'public',u.pathname==='/'?'index.html':path.normalize(u.pathname).replace(/^(\.\.[\/\\])+/,''));
  if(f.startsWith(path.join(__dirname,'public'))&&fs.existsSync(f)&&fs.statSync(f).isFile()){const ext=path.extname(f);return send(res,200,fs.readFileSync(f),{'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css'}[ext]||'application/octet-stream');}
